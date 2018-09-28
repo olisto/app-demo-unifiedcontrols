@@ -1,0 +1,17 @@
+{
+  "name": "app-demo-unifiedcontrols",
+  "description": "Demonstrator app for unified controls",
+  "version": "0.0.1",
+  "author": "daniel.reus@olisto.com",
+  "main": "app-demo-unifiedcontrols.js",
+  "scripts": {
+    "test": "mocha tests -R xunit"
+  },
+  "dependencies": {
+    "@triggi/triggi-lib-config": "^3.0.0",
+    "@triggi/triggi-lib-log": "^2.0.0",
+    "@triggi/triggi-lib-service": "4.6.2"
+  },
+  "devDependencies": {
+  }
+}
