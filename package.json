@@ -12,6 +12,5 @@
     "@triggi/triggi-lib-log": "^2.0.0",
     "@triggi/triggi-lib-service": "4.6.2"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
