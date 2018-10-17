@@ -40,10 +40,10 @@ GET /api/v1/channels/descriptions?includeConnections=1&includeUnits=1&classes=Ro
 ### Request:
 #### Querystring:
 ```
-includeConnections: set to 1 to include details related to channels being connected
-includeUnits: set to 1 to include details related to units available for channels that are already connected
-classes: list of classes that at least one unit in the channel must have for a channel to be included
-traits: list of traits that at least one unit in the channel must have for a channel to be included
+includeConnections: Integer. Set to 1 to include details related to channels being connected
+includeUnits: Integer. Set to 1 to include details related to units available for channels that are already connected
+classes: String. List of classes that at least one unit in the channel must have for a channel to be included, separated by ','.
+traits: String. List of traits that at least one unit in the channel must have for a channel to be included, separated by ','.
 ```
 #### Headers:
 ```
@@ -74,13 +74,13 @@ channelAccounts: Array of Objects. Information related to current connections to
     internalId: String. Used when referencing this unit in further calls.
     endpoint: String. Used when referencing this unit in further calls.
 ```
-3. Initiate channel linking sequence
+## 3. Initiate channel linking sequence
 ```
-Browse (GET): /channels/${channelId}/ops/signin?token={token}
+Browse (GET): /channel/{channelId}/ops/signin?token={token}
 ```
 Takes the user trough the authentication flow appropriate to the given channel. Once the user completes the flow a 'channelaccount created' event as wel as any number of 'unit created' events will be emitted.
 
-4. Update the list of available units. Easiest way would be to re-perform the request in (2). Alternatively:
+## 4. Update the list of available units. Easiest way would be to re-perform the request in (2). Alternatively:
 ```
 GET /api/v1/units
 ```
@@ -100,7 +100,7 @@ x-access-token: the token for the user context, as retrieved in (1)
 ##### body:
 Array of Objects identical to the channelAccounts.#.units field in (2)
 
-5. Perform supported actions on available units
+## 5. Perform supported actions on available units
 Actions that are supported are defined by the traits that a unit has.
 ```
 /api/v1/actions
@@ -127,14 +127,18 @@ String: status code. 'triggi/ok' if executed correctly.
 # Using websockets
 The unified controls API utilizes socket.io. Perform the following steps to set up a working connection. How this is done exactly depends on your client library of choice. All payloads are JSON.  
 
-1. Connect to `https://connect[-dev].triggi.com/`
-2. emit an 'authenticate' event with the following body:
+1. Connect to `https://connect[-dev].triggi.com/`. Include the following headers:
+- `x-access-token`: String. the user context token as obtained in (1) 
+- `x-client-id`: String. A connection identifier that usually relates to the application. Susbcriptions are shared among connections that use the same client id. When omitted the identifier 'default' is assumed, implying that subscription state is shared between all connections. 
+
+Alternatively, instead of including the mentioned headers, an 'authenticate' message can be emitted with the following body:
 ```
-token: String. the user context token as obtained in (1) 
-client: String. A connection identifier that usually relates to the application. When omitted the identifier 'default' is assumed, implying that subscription state is shared between all connections.
+token: String. Same as the 'x-access-token' header. 
+client: String. Same as the 'x-client-id' header.
 ```
 From this point on system events (channel connected, units updated) will be emitted.
-3. When discovering new units, subscribe to state updates of interest by emitting a 'subscribe' event with the following body:
+
+2. When discovering new units, subscribe to state updates of interest by emitting a 'subscribe' event with the following body:
 ```
 states: Array of String. Subscriptions to request. Each string being composed of:
   {unit endpoint} + '.' + {state name}
@@ -142,12 +146,18 @@ states: Array of String. Subscriptions to request. Each string being composed of
 ```
 Unit enpoints are found in the results of API calls in (2) and (4). State names are found in (#Available traits)
 
-4. Receive state update events. 
-Event name: 'stateUpdate'
-Payload:
-```
+3. Receive state update events. 
 
+* Event name: 'stateUpdate'
+* Payload: Map of updated endpoints to map of updated states to new values.
 ```
+{
+	{endpoint}: {
+		{state}: value
+	}
+}
+```
+value can be of any type, depending on the type associated to the specific state.
 
 # Classes and traits
 Classes are used to indicate that units (devices) belong to a specific category. They should be used for categorization purposes but do not have strict implications as to what a device can do. They are organized hierarchically. Ie, a unit could be a RoomThermostat, which is a specific kind of Thermostat and is distinctive from thermostats in ovens and fridges. 
