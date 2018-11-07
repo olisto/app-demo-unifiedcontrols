@@ -8,7 +8,7 @@ Note: Fields with type 'text' can contain either a plain text String, which will
 
 Not all fields will have all languages available, but 'en' will always be available.
 
-Implementing the unified controls API entails entails 2 major parts:
+Implementing the unified controls API entails 2 major parts:
 - A REST API to perform functions like account linking, unit discovery and initiating unit actions
 - Webhooks or a websocket to receive asynchronous updates, such as state updates or units themselves being updated (ie, users adding devices to their system)
 
