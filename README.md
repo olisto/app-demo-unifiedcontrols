@@ -1,4 +1,9 @@
-# Getting started
+# Running the demonstrator
+```
+npm install --production
+npm start
+```
+# Getting started using Olisto Unified Controls
 Note: Fields with type 'text' can contain either a plain text String, which will then be a human readable text, or a map of locales to Strings, where the strings will then be the human readable text in the specified locale. Currently supported locales are:
 - en
 - nl
