@@ -3,6 +3,22 @@
 npm install --production
 npm start
 ```
+
+### Compiles and hot-reloads for development
+```
+npm run serve
+```
+
+### Compiles and minifies for production
+```
+npm run build
+```
+
+### Lints and fixes files
+```
+npm run lint
+```
+
 # Getting started using Olisto Unified Controls
 Note: Fields with type 'text' can contain either a plain text String, which will then be a human readable text, or a map of locales to Strings, where the strings will then be the human readable text in the specified locale. Currently supported locales are:
 - en
@@ -203,3 +219,4 @@ Traits are used to indicate what units can do exactly. Each trait implies the ab
 - SenseTemperature
 - SenseBatteryLevel
 - StartStop
+
