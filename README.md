@@ -52,7 +52,7 @@ traits: String. List of traits that at least one unit in the channel must have f
 ```
 #### Headers:
 ```
-x-access-token: the token for the user context, as retrieved in (1)
+authorization: Bearer + the token for the user context, as retrieved in (1)
 ```
 ### Response:
 #### 200:
@@ -98,7 +98,7 @@ traits: list of traits that units must have to be included
 ```
 #### Headers:
 ```
-x-access-token: the token for the user context, as retrieved in (1)
+authorization: Bearer + the token for the user context, as retrieved in (1)
 ```
 ### Response:
 #### 200:
@@ -113,7 +113,7 @@ Actions that are supported are defined by the traits that a unit has.
 ### Request:
 #### Headers:
 ```
-x-access-token: the token for the user context, as retrieved in (1)
+authorization: Bearer + the token for the user context, as retrieved in (1)
 ```
 #### body:
 ```
@@ -132,13 +132,15 @@ String: status code. 'triggi/ok' if executed correctly.
 # Using websockets
 The unified controls API utilizes socket.io. Perform the following steps to set up a working connection. How this is done exactly depends on your client library of choice. All payloads are JSON.  
 
-1. Connect to `https://connect[-dev].triggi.com/`. Include the following headers:
-- `x-access-token`: String. the user context token as obtained in (1) 
+1. Connect to `https://connect[-dev].triggi.com/`. Include the following header:
+- `authorization`: String. `Bearer ` + the user context token as obtained in (1) 
+  
+And include the following query parameter:
 - `x-client-id`: String. A connection identifier that usually relates to the application. Susbcriptions are shared among connections that use the same client id. When omitted the identifier 'default' is assumed, implying that subscription state is shared between all connections. 
 
 Alternatively, instead of including the mentioned headers, an 'authenticate' message can be emitted with the following body:
 ```
-token: String. Same as the 'x-access-token' header. 
+token: String. Same as the token in the authorization header. 
 client: String. Same as the 'x-client-id' header.
 ```
 From this point on system events (channel connected, units updated) will be emitted.
