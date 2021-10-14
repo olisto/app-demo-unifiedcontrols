@@ -1,23 +1,22 @@
 {
   "name": "app-demo-unifiedcontrols",
-  "description": "Demonstrator app for unified controls",
   "version": "0.0.1",
+  "description": "Demonstrator app for unified controls",
   "author": "daniel.reus@olisto.com",
-  "main": "app-demo-unifiedcontrols.js",
   "scripts": {
-    "start": "http-server html/",
-    "postinstall": "bower install --production",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "postinstall": "bower install --production",
+    "start": "http-server html/"
   },
+  "main": "app-demo-unifiedcontrols.js",
   "dependencies": {
     "@triggi/triggi-lib-config": "^3.1.1",
     "@triggi/triggi-lib-log": "^2.6.0",
     "@triggi/triggi-lib-service": "4.41.0",
     "core-js": "^3.6.5",
-    "http-server": "^0.11.1",
-    "vue": "^2.6.11"
+    "http-server": "^0.11.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
@@ -26,7 +25,13 @@
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
-    "vue-template-compiler": "^2.6.11"
+    "sass": "~1.32.0",
+    "sass-loader": "^10.0.0",
+    "vue": "^2.6.11",
+    "vue-cli-plugin-vuetify": "~2.4.3",
+    "vue-template-compiler": "^2.6.11",
+    "vuetify": "^2.4.0",
+    "vuetify-loader": "^1.7.0"
   },
   "eslintConfig": {
     "root": true,
