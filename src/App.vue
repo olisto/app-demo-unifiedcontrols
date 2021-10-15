@@ -5,7 +5,6 @@
 				color="primary"
 				dark
 		>
-
 			<v-spacer></v-spacer>
 			<v-btn raised :disabled="htmlBool(token)" @click="showLoginPartnerDialog = true">Sign in with partner key</v-btn>
 			<v-btn raised :disabled="htmlBool(token)" @click="signInWithAccount">Sign in with Olisto account</v-btn>
@@ -15,6 +14,7 @@
 
 		<v-main>
 			<HelloWorld/>
+			<!-- Connectable channels grid -->
 			<v-container fluid>
 				<v-row dense>
 					<v-col
@@ -43,6 +43,7 @@
 			</v-container>
 		</v-main>
 
+		<!-- Dialog: Login with partner key -->
 		<v-dialog
 				v-model="showLoginPartnerDialog"
 		>
@@ -58,6 +59,8 @@
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
+
+		<!-- Dialog: Delete account -->
 		<v-dialog
 				v-model="showDeleteAccountDialog"
 		>
@@ -73,6 +76,8 @@
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
+
+		<!-- Toast: Errors -->
 		<v-snackbar
 				v-model="showingError"
 				color="red"
