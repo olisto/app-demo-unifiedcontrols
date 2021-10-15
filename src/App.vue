@@ -15,7 +15,34 @@
 
 		<v-main>
 			<HelloWorld/>
+			<v-container fluid>
+				<v-row dense>
+					<v-col
+						v-for="(channel, index) in connectableChannels"
+						:key="index"
+					>
+						<v-card
+							class="mx-auto"
+							max-width="400"
+						>
+							<v-img
+									height="200px"
+									:src="`https://${server}/api/v1/files/${channel.channelInfo.images.header}`"
+									class="white--text align-end"
+									gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+							>
+								<v-card-title>{{ts(channel.channelInfo.title)}}</v-card-title>
+							</v-img>
+							<v-card-text></v-card-text>
+							<v-card-actions class="justify-end">
+								<v-btn :href="`https://${server}/api/v1/accessControl/proxy/channel/${channel.id}/ops/signin?bearerToken=${token}`" target="_blank">Connect</v-btn>
+							</v-card-actions>
+						</v-card>
+					</v-col>
+				</v-row>
+			</v-container>
 		</v-main>
+
 		<v-dialog
 				v-model="showLoginPartnerDialog"
 		>
@@ -65,6 +92,8 @@
 		},
 
 		data: () => ({
+			connectableChannels: [],
+
 			// User session, logging in
 			token: null,
 			partnerKey: null,
@@ -87,6 +116,7 @@
 				}
 				axios.defaults.headers.authorization = `Bearer ${token}`;
 				window.localStorage.token = token;
+				this.updateUnits();
 			}
 		},
 
@@ -114,6 +144,19 @@
 				return val ? true : null;
 			},
 
+			// Translation funcion. Should select localized string according to UI locale and fall-back to en. Hardcoded to 'en' now.
+			ts: function(str) {
+				return typeof(str) === 'string' ? str : str.en;
+			},
+
+			async updateUnits() {
+				const traits = ['ControlTemperature'].join(',');
+				const url = `/api/v1/channels/descriptions?includeConnections=1&includeUnits=1&traits=${traits}`;
+				const unitsResponse = await axios.get(url);
+				this.connectableChannels = Object.values(unitsResponse.data)
+					.filter(description => description.channelAccounts.length === 0);
+
+			// Session and Account management
 			signout() {
 				this.token = '';
 				window.localStorage.removeItem('token');
