@@ -14,8 +14,35 @@
 
 		<v-main>
 			<HelloWorld/>
+			<!-- Controllable devices grid-->
+			<v-container fluid v-if="units.length">
+				<p>Control a device</p>
+				<v-row dense>
+					<v-col
+							v-for="(unit, index) in units"
+							:key="index"
+					>
+						<v-card
+								class="mx-auto"
+								width="400"
+						>
+							<v-card-title>{{unit.name}}</v-card-title>
+							<v-card-text>
+								<p
+									v-for="(trait, index) in unitTypesMap[unit.typeKey].traits"
+									:key="index"
+								>{{trait}}</p>
+							</v-card-text>
+							<v-card-actions class="justify-end">
+							</v-card-actions>
+						</v-card>
+					</v-col>
+				</v-row>
+			</v-container>
+
 			<!-- Connectable channels grid -->
-			<v-container fluid>
+			<v-container fluid v-if="connectableChannels.length">
+				<p>{{units.length ? 'Or, c' : 'C'}}onnect to a channel</p>
 				<v-row dense>
 					<v-col
 						v-for="(channel, index) in connectableChannels"
@@ -98,6 +125,10 @@
 
 		data: () => ({
 			connectableChannels: [],
+			channels: [],
+			channelsMap: {},
+			units: [],
+			unitTypesMap: {},
 
 			// User session, logging in
 			token: null,
@@ -133,7 +164,7 @@
 			},
 		},
 
-		created() {
+		async created() {
 			axios.defaults.baseURL = `https://${this.server}`;
 			this.partnerKey = window.localStorage.partnerKey || '';
 			this.userId = window.localStorage.userId || '';
@@ -146,6 +177,8 @@
 			} else if (window.localStorage.token) {
 				this.token = window.localStorage.token;
 			}
+			await this.loadUnitTypes();
+			this.updateUnits();
 		},
 
 		methods: {
@@ -163,12 +196,37 @@
 				return typeof(str) === 'string' ? str : str.en;
 			},
 
+			async loadUnitTypes() {
+				if (!this.token) {
+					this.unitTypesMap = {};
+					this.channelsMap = {};
+					this.channels = {};
+					return;
+				}
+				const channelDescriptions = await axios.get(`/api/v1/channels/descriptions`);
+				const allChannelsMap = channelDescriptions.data;
+				const unitTypesKv = Object.values(allChannelsMap).map(c => c.unitTypes.map(ut => [`${c.id}.${ut.id}`, {channel: c.id, ...ut}])).flat();
+				this.unitTypesMap = Object.fromEntries(unitTypesKv.filter(kv => kv[1].traits && kv[1].traits.length));
+				this.channelsMap = Object.fromEntries(Object.values(this.unitTypesMap).map(ut => [ut.channel, allChannelsMap[ut.channel]]));
+				this.channels = Object.values(this.channelsMap);
 			async updateUnits() {
-				const traits = ['ControlTemperature'].join(',');
-				const url = `/api/v1/channels/descriptions?includeConnections=1&includeUnits=1&traits=${traits}`;
-				const unitsResponse = await axios.get(url);
-				this.connectableChannels = Object.values(unitsResponse.data)
-					.filter(description => description.channelAccounts.length === 0);
+				if (!this.token) {
+					this.connectableChannels = [];
+					this.units = [];
+					return;
+				}
+				const traits = {OnOff: true};
+				const channelAccounts = (await axios.get(`/api/v1/channelaccounts`)).data;
+				const channelAccountsMap = Object.fromEntries(channelAccounts.map(ca => ([ca.channel, ca])));
+				this.connectableChannels = this.channels.filter(c => !channelAccountsMap[c.id]);
+				const allUnits = (await axios.get(`/api/v1/units`)).data;
+				this.units = allUnits.map(u => ({
+					...u,
+					state: {},
+					typeKey: `${u.channel}.${u.type}`,
+					allTraits: (this.unitTypesMap[`${u.channel}.${u.type}`] || {}).allTraits || [],
+					traits: (this.unitTypesMap[`${u.channel}.${u.type}`] || {}).traits || [],
+				})).filter(u => u.allTraits.some(t => traits[t]));
 
 			// Session and Account management
 			signout() {
