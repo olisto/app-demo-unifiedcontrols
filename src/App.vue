@@ -122,12 +122,19 @@
 				axios.defaults.headers.authorization = `Bearer ${token}`;
 				window.localStorage.token = token;
 				this.updateUnits();
-			}
+			},
+			partnerKey: function(value) {
+				window.localStorage.partnerKey = value;
+			},
+			userId: function(value) {
+				window.localStorage.userId = value;
+			},
 		},
 
 		created() {
 			axios.defaults.baseURL = `https://${this.server}`;
-			console.log(this.$route.query.token);
+			this.partnerKey = window.localStorage.partnerKey || '';
+			this.userId = window.localStorage.userId || '';
 			// Were we loaded with a token in the qs (usually after visiting the sign-in page)?
 			if (this.$route.query.token) {
 				this.token = this.$route.query.token;
