@@ -154,6 +154,7 @@
 					window.localStorage.removeItem('token');
 					delete axios.defaults.headers.authorization;
 				}
+				await this.loadUnitTypes();
 				this.updateUnits();
 			},
 			partnerKey: function(value) {
@@ -177,8 +178,6 @@
 			} else if (window.localStorage.token) {
 				this.token = window.localStorage.token;
 			}
-			await this.loadUnitTypes();
-			this.updateUnits();
 		},
 
 		methods: {
@@ -200,7 +199,7 @@
 				if (!this.token) {
 					this.unitTypesMap = {};
 					this.channelsMap = {};
-					this.channels = {};
+					this.channels = [];
 					return;
 				}
 				const channelDescriptions = await axios.get(`/api/v1/channels/descriptions`);
@@ -231,9 +230,11 @@
 			// Session and Account management
 			signout() {
 				this.token = '';
-				window.localStorage.removeItem('token');
-				this.channelDescriptions = null;
-				this.units = null;
+				this.unitTypesMap = {};
+				this.channelsMap = {};
+				this.channels = [];
+				this.connectableChannels = [];
+				this.units = [];
 				this.$socket.disconnect();
 			},
 
