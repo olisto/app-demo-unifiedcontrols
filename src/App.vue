@@ -81,8 +81,8 @@
 					<v-text-field id="userId" label="User ID" v-model="userId" required></v-text-field>
 				</v-card-text>
 				<v-card-actions class="justify-end">
-					<v-btn color="blue darken-1" text @click="showLoginPartnerDialog = false">Nevermind</v-btn>
 					<v-btn color="blue darken-1" text @click="signInWithPartnerKey(); showLoginPartnerDialog = false">Log in</v-btn>
+					<v-btn color="blue darken-1" text @click="showLoginPartnerDialog = false">Nevermind</v-btn>
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
@@ -98,8 +98,8 @@
 					<p>This actually deletes the current user context (account), even if it's a regular Olisto account, and can not be undone! Are you sure?</p>
 				</v-card-text>
 				<v-card-actions class="justify-end">
-					<v-btn color="blue darken-1" text @click="showDeleteAccountDialog = false">Cancel</v-btn>
 					<v-btn color="red" text @click="deleteAccount(); showDeleteAccountDialog = false">Accept</v-btn>
+					<v-btn color="blue darken-1" text @click="showDeleteAccountDialog = false">Cancel</v-btn>
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
