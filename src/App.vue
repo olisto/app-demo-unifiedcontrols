@@ -116,11 +116,13 @@
 
 		watch: {
 			token: async function(token) {
-				if (!token) {
-					return;
+				if (token) {
+					axios.defaults.headers.authorization = `Bearer ${token}`;
+					window.localStorage.token = token;
+				} else {
+					window.localStorage.removeItem('token');
+					delete axios.defaults.headers.authorization;
 				}
-				axios.defaults.headers.authorization = `Bearer ${token}`;
-				window.localStorage.token = token;
 				this.updateUnits();
 			},
 			partnerKey: function(value) {
