@@ -1,21 +1,20 @@
 # Running the demonstrator
-```
-npm install --production
-npm start
-```
-
 ### Compiles and hot-reloads for development
 ```
+npm install
 npm run serve
 ```
 
 ### Compiles and minifies for production
 ```
+npm install
 npm run build
+npm run serve-dist
 ```
 
 ### Lints and fixes files
 ```
+npm install
 npm run lint
 ```
 
@@ -42,7 +41,7 @@ POST /api/v1/user/account
 #### body:
 ```
 partnerKey: String. The supplied API key
-userId: String. External (your) reference for the user context
+partnerUserId: String. Your reference for the user context
 ```
 
 ### Response:
@@ -54,18 +53,11 @@ userId: String. External (your) reference for the user context
 ```
 
 ## 2. Retrieve available channel information.
-Information about channels that offer the wanted functionality. Also includes any units (devices) already connected.
+Information about available channels.
 ```
-GET /api/v1/channels/descriptions?includeConnections=1&includeUnits=1&classes=RoomThermostat&traits=ControlTemperature,SenseTemperature
+GET /api/v1/channels/descriptions
 ```
 ### Request:
-#### Querystring:
-```
-includeConnections: Integer. Set to 1 to include details related to channels being connected
-includeUnits: Integer. Set to 1 to include details related to units available for channels that are already connected
-classes: String. List of classes that at least one unit in the channel must have for a channel to be included, separated by ','.
-traits: String. List of traits that at least one unit in the channel must have for a channel to be included, separated by ','.
-```
 #### Headers:
 ```
 authorization: Bearer + the token for the user context, as retrieved in (1)
@@ -73,7 +65,7 @@ authorization: Bearer + the token for the user context, as retrieved in (1)
 ### Response:
 #### 200:
 ##### body:
-Map of channel ID's to channel descriptions. Each description has the fillowing fields:
+Map of channel ID's to channel descriptions. Each description has the following fields:
 ```
 id: String. Id of the channel
 channelInfo: Map. Contains descriptive info about the channel
@@ -85,32 +77,18 @@ channelInfo: Map. Contains descriptive info about the channel
 unitTypes: Array of Objects. Descriptions for each type of unit offered by the channel. Will only include types that fullfill the requested classes & traits
   id: String.
   title: Text.
-  classes: Array of String. TODO. All classes this unit belongs to
-  traits:  Array of String. TODO. All traits this unit has.
-channelAccounts: Array of Objects. Information related to current connections to the channel. Only present of `includeConnections` was set to 1.
-  health: String. Indicates wether the connection to the API is experiencing any problems. Should be 'ok'. When value is other than 'ok' a problem indicator should be displayed and an option to re-link should be offered.
-  units: Array of Objects. Actual units available through the current connection. Only present if `includeUnits` was set to 1.
-    name: String. User-given (or tech-provided) human readable name for the unit.
-    type: String. Reference to the unit type Id.
-    internalId: String. Used when referencing this unit in further calls.
-    endpoint: String. Used when referencing this unit in further calls.
+  traits:  Array of String. All traits this unit has.
+  attributes: Map of attributes related to the traits the unit type has
 ```
-## 3. Initiate channel linking sequence
-```
-Browse (GET): /channel/{channelId}/ops/signin?token={token}
-```
-Takes the user trough the authentication flow appropriate to the given channel. Once the user completes the flow a 'channelaccount created' event as wel as any number of 'unit created' events will be emitted.
 
-## 4. Update the list of available units. Easiest way would be to re-perform the request in (2). Alternatively:
+## 3. Retrieve list of channel accounts (currently connected channels)
 ```
-GET /api/v1/units
+GET /api/v1/channelaccounts
 ```
 ### Request:
 #### Querystring:
 ```
-channel: Channel identifier. Only returns units for the specified channel, as retrieved in (2)
-classes: list of classes that units must have to be included
-traits: list of traits that units must have to be included
+status: Current status of the connection progress. Specify 'connected' to retrieve accounts only for fully connected channels.
 ```
 #### Headers:
 ```
@@ -119,9 +97,45 @@ authorization: Bearer + the token for the user context, as retrieved in (1)
 ### Response:
 #### 200:
 ##### body:
-Array of Objects identical to the channelAccounts.#.units field in (2)
+List of connections to channels (channel accounts). Each channel account has the following fields:
+```
+_id: String. Id for the connection
+channel: String. Id of the channel connected to 
+status: String. Current status of the connection progress. 'connected' for fully connected channels, any other value can be considered as 'not connected' for most purposes. 
+health: String. Current state of the account. 'ok' for a normally functional connection; 'authFailed' for connections with authentication problems (need user to re-connect); any other for specific problems.
+```
 
-## 5. Perform supported actions on available units
+## 4. Retrieve list of available units
+```
+GET /api/v1/units
+```
+### Request:
+#### Headers:
+```
+authorization: Bearer + the token for the user context, as retrieved in (1)
+```
+### Response:
+#### 200:
+##### body:
+List of available units. Each unit has the following fields:
+```
+_id: String. Id for the unit
+name: String. The human-readable name for the unit
+channel: String. Id of the channel the unit is connected to
+type: String. Id of the type of the unit
+channelAccount: String. Id of the channel account the unit is connected to
+endpoint: String. Internal identifier to be used when invoking an action on the unit
+```
+
+## 5. Initiate channel linking sequence
+```
+Browse (GET): /api/v1/accessControl/proxy/channel/{channelId}/ops/signin?bearerToken={token}
+```
+Takes the user trough the authentication flow for the given channel.
+Once the user completes the flow a 'channel account created' event as wel as any number of 'unit created' events will be emitted.
+The list of connected channels and available units should be updated after this, either by processing the 'channel account created' and 'unit created' events or by re-loading the channel accounts and units from the server.
+
+## 6. Perform supported actions on available units
 Actions that are supported are defined by the traits that a unit has.
 ```
 /api/v1/actions
@@ -148,8 +162,8 @@ String: status code. 'triggi/ok' if executed correctly.
 # Using websockets
 The unified controls API utilizes socket.io. Perform the following steps to set up a working connection. How this is done exactly depends on your client library of choice. All payloads are JSON.  
 
-1. Connect to `https://connect[-dev].triggi.com/`. Include the following header:
-- `authorization`: String. `Bearer ` + the user context token as obtained in (1) 
+1. Connect to `https://connect[-dev].olisto.com/`. Include the following header:
+- `Authorization`: String. `Bearer ` + the user context token as obtained in (1) 
   
 And include the following query parameter:
 - `x-client-id`: String. A connection identifier that usually relates to the application. Susbcriptions are shared among connections that use the same client id. When omitted the identifier 'default' is assumed, implying that subscription state is shared between all connections. 
@@ -182,41 +196,17 @@ Unit enpoints are found in the results of API calls in (2) and (4). State names 
 ```
 value can be of any type, depending on the type associated to the specific state.
 
-# Classes and traits
-Classes are used to indicate that units (devices) belong to a specific category. They should be used for categorization purposes but do not have strict implications as to what a device can do. They are organized hierarchically. Ie, a unit could be a RoomThermostat, which is a specific kind of Thermostat and is distinctive from thermostats in ovens and fridges. 
+# Traits
 Traits are used to indicate what units can do exactly. Each trait implies the ability to perform some actions and reports some states and events. Attributes are used to provide device-specific details about a trait, such as range, available values, etc.
 
-## Available classes
-- Device
-- Thermostat
-- RoomThermostat
-- Alarm
-- Camera
-- Light
-- Oven
-- Fridge
-- Washer
-- Dishwasher
-
 ## Available traits
-- ControlOnOff
-- ControlTemperature
-  - Actions: 
-    - setSetpoint: Sets the target temperature
-      Arguments:
-      - setpoint: Target setpoint in Celcius.
-      
-      States:
-      - setpoint: Current setpoint in Celcius
-      - temperature: Current temperature in Celcius
-- DetectMotion
-- DetectPersons
-- DetectSmoke
-- SenseElectricityFlow
-- SenseHumidity
-- SenseLightLevel
-- SenseOnOff
-- SenseTemperature
-- SenseBatteryLevel
-- StartStop
-
+- OnOff
+- Brightness
+- TemperatureSensor
+- TemperatureController
+- ColorTemperature
+- Color
+- Alarm
+- ArmDisarm
+- MotionSensor
+- ContactSensor
