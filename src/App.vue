@@ -3,17 +3,15 @@
 		<v-app-bar
 				app
 				color="primary"
-				dark
 		>
 			<v-spacer></v-spacer>
-			<v-btn raised :disabled="htmlBool(token)" @click="showLoginPartnerDialog = true">Sign in with partner key</v-btn>
-			<v-btn raised :disabled="htmlBool(token)" @click="signInWithAccount">Sign in with Olisto account</v-btn>
-			<v-btn raised :disabled="!htmlBool(token)" @click="signout">Sign out</v-btn>
-			<v-btn raised :disabled="!htmlBool(token)" @click="showDeleteAccountDialog = true">Delete user context</v-btn>
+			<v-btn raised :disabled="htmlBool(token)" @click="showLoginPartnerDialog = true" class="ma-2">Sign in with partner key</v-btn>
+			<v-btn raised :disabled="htmlBool(token)" @click="signInWithAccount" class="ma-2">Sign in with Olisto account</v-btn>
+			<v-btn raised :disabled="!htmlBool(token)" @click="signout" class="ma-2">Sign out</v-btn>
+			<v-btn raised :disabled="!htmlBool(token)" @click="showDeleteAccountDialog = true" class="ma-2">Delete user context</v-btn>
 		</v-app-bar>
 
 		<v-main>
-			<HelloWorld/>
 			<!-- Controllable devices grid-->
 			<v-container fluid v-if="units.length">
 				<p>Control a device</p>
@@ -33,8 +31,6 @@
 									:key="index"
 								>{{trait}}</p>
 							</v-card-text>
-							<v-card-actions class="justify-end">
-							</v-card-actions>
 						</v-card>
 					</v-col>
 				</v-row>
@@ -50,7 +46,7 @@
 					>
 						<v-card
 							class="mx-auto"
-							max-width="400"
+							max-width="300"
 						>
 							<v-img
 									height="200px"
@@ -114,13 +110,11 @@
 
 <script>
 	import axios from "axios";
-	import HelloWorld from './components/HelloWorld';
 
 	export default {
 		name: 'App',
 
 		components: {
-			HelloWorld,
 		},
 
 		data: () => ({
