@@ -251,9 +251,12 @@
 					this.units = [];
 					return;
 				}
+				// Retrieve accounts for connected channels in the account. Note that we globally set the Bearer token when logged in
 				const channelAccounts = (await axios.get(`/api/v1/channelaccounts?status=connected`)).data;
 				this.connectedChannelsMap = Object.fromEntries(channelAccounts.map(ca => [ca.channel, ca]));
+				// Retrieve all available units in the account
 				const allUnits = (await axios.get(`/api/v1/units`)).data;
+				// Enrich and filter unit data
 				this.units = allUnits.map(u => {
 					const typeKey = `${u.channel}.${u.type}`;
 					// (later) filter out those for which we don't have a type definition
@@ -265,7 +268,7 @@
 						// Add typeKey for easy type definition lookup
 						typeKey,
 					};
-				}).filter(u => u && this.unitTypesMap[u.typeKey].allTraits.some(t => traits[t]));
+				}).filter(u => u);
 			},
 
 			// Session and Account management
