@@ -95,8 +95,8 @@
 			<v-card>
 				<v-card-title>Log in using partner key</v-card-title>
 				<v-card-text>
-					<v-text-field id="partnerId" label="Partner key" v-model="partnerKey" autofocus required></v-text-field>
-					<v-text-field id="userId" label="User ID" v-model="userId" required></v-text-field>
+					<v-text-field label="Partner key" v-model="partnerKey" autofocus required></v-text-field>
+					<v-text-field label="User ID" v-model="partnerUserId" required></v-text-field>
 				</v-card-text>
 				<v-card-actions class="justify-end">
 					<v-btn color="blue darken-1" text @click="signInWithPartnerKey(); showLoginPartnerDialog = false">Log in</v-btn>
@@ -159,7 +159,7 @@
 			// User session, logging in
 			token: null,
 			partnerKey: null,
-			userId: null,
+			partnerUserId: null,
 
 			// Controlling dialogs and toasts
 			showLoginPartnerDialog: false,
@@ -186,15 +186,15 @@
 			partnerKey: function(value) {
 				window.localStorage.partnerKey = value;
 			},
-			userId: function(value) {
-				window.localStorage.userId = value;
+			partnerUserId: function(value) {
+				window.localStorage.partnerUserId = value;
 			},
 		},
 
 		async created() {
 			axios.defaults.baseURL = `https://${this.server}`;
 			this.partnerKey = window.localStorage.partnerKey || '';
-			this.userId = window.localStorage.userId || '';
+			this.partnerUserId = window.localStorage.partnerUserId || '';
 			// Were we loaded with a token in the qs (usually after visiting the sign-in page)?
 			if (this.$route.query.token) {
 				this.token = this.$route.query.token;
@@ -288,7 +288,7 @@
 				try {
 					const loginResponse = await axios.post(`/api/v1/user/account`, {
 						partnerKey: this.partnerKey,
-						userId: this.userId,
+						partnerUserId: this.partnerUserId,
 					});
 					this.token = loginResponse.data.token;
 				} catch(e) {
