@@ -1,18 +1,29 @@
-# Running the demonstrator
-### Compiles and hot-reloads for development
+# Unified controls sample app
+This sample application showcases the basic interaction involved in using Olisto Unified controls: 
+- Getting/retrieving an Olisto user context or account
+- Discovering available channels and their unit types with their capabilities
+- Discovering connected channels and available units
+- Connecting channels
+- Invoking actions on a connected unit
+- Handling state updates from a connected unit
+
+It is build as a single-page web-app, based on the Vue framework, using Vuetify as a UI component library.
+
+## Running the app
+### Compile and hot-reloads for development
 ```
 npm install
 npm run serve
 ```
 
-### Compiles and minifies for production
+### Compile and minify for production
 ```
 npm install
 npm run build
 npm run serve-dist
 ```
 
-### Lints and fixes files
+### Lint and fix files
 ```
 npm install
 npm run lint
@@ -72,7 +83,8 @@ channelInfo: Map. Contains descriptive info about the channel
   title: Text. Human readable title
   description: Text. Extensive description for the channel.
   images: Map. Contains:
-    logo: name of the logo image. Images are provided as colorless SVG's. Name should be inserted in: /api/v1/files/{name} to obtain the full URI.
+    logo: String. Name of the logo image. Most logo's are provided as colorless SVG's. Name should be inserted in: /api/v1/files/{name} to obtain the full URI.
+    header: String. Name of the image suitable as a page header. Provided as jpeg or png. Name should be inserted in: /api/v1/files/{name} to obtain the full URI.    
   color: String. HTML color code to be used for materials related to this channel.
 unitTypes: Array of Objects. Descriptions for each type of unit offered by the channel. Will only include types that fullfill the requested classes & traits
   id: String.
