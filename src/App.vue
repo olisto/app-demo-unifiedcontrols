@@ -26,10 +26,23 @@
 						>
 							<v-card-title>{{unit.name}}</v-card-title>
 							<v-card-text>
-								<p
+								<!-- For each trait supported by the unit -->
+								<template
 									v-for="(trait, index) in unitTypesMap[unit.typeKey].traits"
-									:key="index"
-								>{{trait}}</p>
+								>
+									<!-- If we have a control component for the trait, render it -->
+									<component
+										v-if="$options.components[`${trait}Control`]"
+										:is="`${trait}Control`"
+										:key="index"
+										:unit="unit"
+									></component>
+									<!-- Else just render the name of the trait -->
+									<p
+										v-else
+										:key="index"
+									>{{trait}}</p>
+								</template>
 							</v-card-text>
 						</v-card>
 					</v-col>
@@ -110,11 +123,15 @@
 
 <script>
 	import axios from "axios";
+	import OnOffControl from "./components/controls/OnOffControl.vue";
+	import BrightnessControl from "./components/controls/BrightnessControl.vue";
 
 	export default {
 		name: 'App',
 
 		components: {
+			OnOffControl,
+			BrightnessControl,
 		},
 
 		data: () => ({
