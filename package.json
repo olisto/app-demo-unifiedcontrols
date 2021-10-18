@@ -12,10 +12,12 @@
     "serve-dist": "http-server build/ -d false -g"
   },
   "main": "app-demo-unifiedcontrols.js",
-  "dependencies": {
+  "optionalDependencies": {
     "@triggi/triggi-lib-config": "^3.1.1",
     "@triggi/triggi-lib-log": "^2.6.0",
-    "@triggi/triggi-lib-service": "4.41.0",
+    "@triggi/triggi-lib-service": "4.41.0"
+  },
+  "dependencies": {
     "core-js": "^3.6.5",
     "http-server": "^0.11.1"
   },

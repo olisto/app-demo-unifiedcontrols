@@ -12,20 +12,20 @@ It is build as a single-page web-app, based on the Vue framework, using Vuetify 
 ## Running the app
 ### Compile and hot-reloads for development
 ```
-npm install
+npm install --no-optional
 npm run serve
 ```
 
 ### Compile and minify for production
 ```
-npm install
+npm install --no-optional
 npm run build
 npm run serve-dist
 ```
 
 ### Lint and fix files
 ```
-npm install
+npm install --no-optional
 npm run lint
 ```
 
