@@ -251,8 +251,8 @@
 					this.units = [];
 					return;
 				}
-				const channelAccounts = (await axios.get(`/api/v1/channelaccounts`)).data;
-				this.connectedChannelsMap = Object.fromEntries(channelAccounts.filter(ca => ca.status === 'connected').map(ca => [ca.channel, ca]));
+				const channelAccounts = (await axios.get(`/api/v1/channelaccounts?status=connected`)).data;
+				this.connectedChannelsMap = Object.fromEntries(channelAccounts.map(ca => [ca.channel, ca]));
 				const allUnits = (await axios.get(`/api/v1/units`)).data;
 				this.units = allUnits.map(u => {
 					const typeKey = `${u.channel}.${u.type}`;
