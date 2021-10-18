@@ -12,10 +12,11 @@
 		</v-app-bar>
 
 		<v-main>
-			<!-- Controllable devices grid-->
+			<!-- Controllable units grid -->
 			<v-container fluid v-if="units.length">
 				<p>Control a device</p>
 				<v-row dense>
+					<!-- For each unit -->
 					<v-col
 							v-for="(unit, index) in units"
 							:key="index"
@@ -28,7 +29,7 @@
 							<v-card-text>
 								<!-- For each trait supported by the unit -->
 								<template
-									v-for="(trait, index) in unitTypesMap[unit.typeKey].traits"
+									v-for="(trait, index) in unitTypesMap[unit.typeKey].allTraits"
 								>
 									<!-- If we have a control component for the trait, render it -->
 									<component
@@ -49,12 +50,12 @@
 				</v-row>
 			</v-container>
 
-			<!-- Connectable channels grid -->
-			<v-container fluid v-if="connectableChannels.length">
+			<!-- channels grid -->
+			<v-container fluid v-if="channels.length">
 				<p>{{units.length ? 'Or, c' : 'C'}}onnect to a channel</p>
 				<v-row dense>
 					<v-col
-						v-for="(channel, index) in connectableChannels"
+						v-for="(channel, index) in channels"
 						:key="index"
 					>
 						<v-card
@@ -71,7 +72,15 @@
 							</v-img>
 							<v-card-text></v-card-text>
 							<v-card-actions class="justify-end">
-								<v-btn :href="`https://${server}/api/v1/accessControl/proxy/channel/${channel.id}/ops/signin?bearerToken=${token}`" target="_blank">Connect</v-btn>
+								<v-btn
+									v-if="!connectedChannelsMap[channel.id]"
+									:href="`https://${server}/api/v1/accessControl/proxy/channel/${channel.id}/ops/signin?bearerToken=${token}`"
+									target="_blank"
+								>Connect</v-btn>
+								<v-btn
+									v-else
+									@click="disconnectChannel(channel)"
+								>Disconnect</v-btn>
 							</v-card-actions>
 						</v-card>
 					</v-col>
@@ -126,20 +135,26 @@
 	import OnOffControl from "./components/controls/OnOffControl.vue";
 	import BrightnessControl from "./components/controls/BrightnessControl.vue";
 
+	// All supported traits
+	const traits = {
+		OnOff: OnOffControl,
+		Brightness: BrightnessControl,
+	};
+
 	export default {
 		name: 'App',
 
 		components: {
-			OnOffControl,
-			BrightnessControl,
+			// Remap all keys in `traits` to `key` + Control
+			...Object.fromEntries(Object.keys(traits).map(k => [`${k}Control`, traits[k]])),
 		},
 
 		data: () => ({
-			connectableChannels: [],
 			channels: [],
 			channelsMap: {},
-			units: [],
 			unitTypesMap: {},
+			connectedChannelsMap: {},
+			units: [],
 
 			// User session, logging in
 			token: null,
@@ -213,30 +228,45 @@
 					this.channels = [];
 					return;
 				}
-				const channelDescriptions = await axios.get(`/api/v1/channels/descriptions`);
-				const allChannelsMap = channelDescriptions.data;
-				const unitTypesKv = Object.values(allChannelsMap).map(c => c.unitTypes.map(ut => [`${c.id}.${ut.id}`, {channel: c.id, ...ut}])).flat();
-				this.unitTypesMap = Object.fromEntries(unitTypesKv.filter(kv => kv[1].traits && kv[1].traits.length));
-				this.channelsMap = Object.fromEntries(Object.values(this.unitTypesMap).map(ut => [ut.channel, allChannelsMap[ut.channel]]));
+				// Load all channel + unit type defintions from server
+				const allChannelsMap = (await axios.get(`/api/v1/channels/descriptions`)).data;
+				// Take unit types from each channel
+				const unitTypes = Object.values(allChannelsMap)
+					// extend with channel ID
+					.map(c => c.unitTypes.map(ut => ({channel: c.id, ...ut})))
+					// flatten into single list
+					.flat()
+					// And filter out those without any supported traits
+					.filter(u => u.allTraits && u.allTraits.some(t => traits[t]));
+				// Map unitTypes, index by `channelId.unitTypeId`
+				this.unitTypesMap = Object.fromEntries(unitTypes.map(ut => [`${ut.channel}.${ut.id}`, ut]));
+
+				// Construct map of useful channels found in the filtered list of unitTypes. De-duplicates.
+				// (this gives us those channels containing at least one unit with selected traits)
+				this.channelsMap = Object.fromEntries(unitTypes.map(ut => [ut.channel, allChannelsMap[ut.channel]]));
+				// Derive list of useful channels from channelsMap, as that is de-duplicated already.
 				this.channels = Object.values(this.channelsMap);
 			async updateUnits() {
 				if (!this.token) {
-					this.connectableChannels = [];
 					this.units = [];
 					return;
 				}
-				const traits = {OnOff: true};
 				const channelAccounts = (await axios.get(`/api/v1/channelaccounts`)).data;
-				const channelAccountsMap = Object.fromEntries(channelAccounts.map(ca => ([ca.channel, ca])));
-				this.connectableChannels = this.channels.filter(c => !channelAccountsMap[c.id]);
+				this.connectedChannelsMap = Object.fromEntries(channelAccounts.filter(ca => ca.status === 'connected').map(ca => [ca.channel, ca]));
 				const allUnits = (await axios.get(`/api/v1/units`)).data;
-				this.units = allUnits.map(u => ({
-					...u,
-					state: {},
-					typeKey: `${u.channel}.${u.type}`,
-					allTraits: (this.unitTypesMap[`${u.channel}.${u.type}`] || {}).allTraits || [],
-					traits: (this.unitTypesMap[`${u.channel}.${u.type}`] || {}).traits || [],
-				})).filter(u => u.allTraits.some(t => traits[t]));
+				this.units = allUnits.map(u => {
+					const typeKey = `${u.channel}.${u.type}`;
+					// (later) filter out those for which we don't have a type definition
+					if (!this.unitTypesMap[typeKey]) {
+						return null;
+					}
+					return {
+						...u,
+						// Add typeKey for easy type definition lookup
+						typeKey,
+					};
+				}).filter(u => u && this.unitTypesMap[u.typeKey].allTraits.some(t => traits[t]));
+			},
 
 			// Session and Account management
 			signout() {
@@ -244,7 +274,6 @@
 				this.unitTypesMap = {};
 				this.channelsMap = {};
 				this.channels = [];
-				this.connectableChannels = [];
 				this.units = [];
 				this.$socket.disconnect();
 			},
@@ -270,6 +299,11 @@
 			async deleteAccount() {
 				await axios.delete(`/api/v1/user/account`);
 				this.signout();
+			},
+
+			async disconnectChannel(channel) {
+				await axios.delete(`/api/v1/channelaccounts/${this.connectedChannelsMap[channel.id]._id}`);
+				this.updateUnits();
 			},
 		},
 	};
