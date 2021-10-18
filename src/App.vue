@@ -286,7 +286,7 @@
 			async signInWithPartnerKey() {
 				this.signout();
 				try {
-					const loginResponse = await axios.post(`/api/v1/user/account`, {
+					const loginResponse = await axios.post(`/api/v1/users/account`, {
 						partnerKey: this.partnerKey,
 						partnerUserId: this.partnerUserId,
 					});
@@ -297,7 +297,7 @@
 			},
 
 			async deleteAccount() {
-				await axios.delete(`/api/v1/user/account`);
+				await axios.delete(`/api/v1/users/`);
 				this.signout();
 			},
 
