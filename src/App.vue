@@ -74,8 +74,8 @@
 							<v-card-actions class="justify-end">
 								<v-btn
 									v-if="!connectedChannelsMap[channel.id]"
-									:href="`https://${server}/api/v1/accessControl/proxy/channel/${channel.id}/ops/signin?bearerToken=${token}`"
-									target="_blank"
+									:href="`https://${server}/api/v1/accessControl/proxy/channel/${channel.id}/ops/signin?externalCallbackUrl=${encodeURIComponent(thisUrl())}&bearerToken=${token}`"
+									target="_self"
 								>Connect</v-btn>
 								<v-btn
 									v-else
