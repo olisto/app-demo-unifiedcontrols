@@ -1,6 +1,11 @@
 <template>
 	<div>
-		<v-switch v-model="value" label="OnOff" :disabled="attributes.isSenseOnly"></v-switch>
+		<v-switch
+				label="OnOff"
+				:value="value"
+				@change="changeValue"
+				:disabled="attributes.isSenseOnly"
+		></v-switch>
 	</div>
 </template>
 
@@ -13,15 +18,6 @@ export default {
 		value: false,
 	}),
 	watch: {
-		value(value) {
-			axios.post('/api/v1/actions', {
-				action: 'setOnOff',
-				endpoints: [this.unit.endpoint],
-				args: {
-					targetOnOffState: value ? 'on' : 'off',
-				},
-			})
-		},
 		socketReady: {
 			// Socket may have already been ready before this element was initialized
 			immediate: true,
@@ -47,5 +43,16 @@ export default {
 			}
 		},
 	},
+	methods: {
+		changeValue(value) {
+			axios.post('/api/v1/actions', {
+				action: 'setOnOff',
+				endpoints: [this.unit.endpoint],
+				args: {
+					targetOnOffState: value ? 'on' : 'off',
+				},
+			})
+		},
+	}
 }
 </script>

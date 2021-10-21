@@ -4,8 +4,9 @@
 			min="0"
 			max="100"
 			unit="%"
-			v-model="value"
 			label="Brightness"
+			:value="value"
+			@change="changeValue"
 			:disabled="attributes.isSenseOnly"
 		></v-slider>
 	</div>
@@ -13,7 +14,6 @@
 
 <script>
 import axios from 'axios';
-import _ from 'lodash';
 
 export default {
 	name: 'BrightnessControl',
@@ -21,22 +21,7 @@ export default {
 	data: () => ({
 		value: 50,
 	}),
-	created() {
-		this.debouncedChangeHandler = _.debounce((value) => {
-			axios.post('/api/v1/actions', {
-				action: 'setBrightness',
-				endpoints: [this.unit.endpoint],
-				args: {
-					targetBrightness: Math.round(value),
-				},
-			});
-		}, 250, { 'maxWait': 1000 });
-	},
 	watch: {
-		value(value) {
-			// Debounce: Prevent activating for every intermediate value while sliding
-			this.debouncedChangeHandler(value);
-		},
 		socketReady: {
 			// Socket may have already been ready before this element was initialized
 			immediate: true,
@@ -57,6 +42,17 @@ export default {
 				this.value = Number(forThisUnit.CurrentBrightness);
 			}
 		},
+	},
+	methods: {
+		changeValue(value) {
+			axios.post('/api/v1/actions', {
+				action: 'setBrightness',
+				endpoints: [this.unit.endpoint],
+				args: {
+					targetBrightness: Math.round(value),
+				},
+			});
+		}
 	}
 }
 </script>
