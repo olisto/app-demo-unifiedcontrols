@@ -8,6 +8,7 @@ This sample application showcases the basic interaction involved in using Olisto
 - Handling state updates from a connected unit
 
 It is build as a single-page web-app, based on the Vue framework, using Vuetify as a UI component library.
+It can be seen in action on <https://olisto.github.io/app-demo-unifiedcontrols/#/>
 
 ## Running the app
 ### Compile and hot-reloads for development
