@@ -189,10 +189,10 @@
 				await this.loadUnitTypes();
 				this.updateUnits();
 			},
-			partnerKey: function(value) {
+			partnerKey(value) {
 				window.localStorage.partnerKey = value;
 			},
-			partnerUserId: function(value) {
+			partnerUserId(value) {
 				window.localStorage.partnerUserId = value;
 			},
 		},
