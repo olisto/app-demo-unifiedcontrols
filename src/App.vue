@@ -22,7 +22,6 @@
 							:key="index"
 					>
 						<v-card
-								class="mx-auto"
 								width="400"
 						>
 							<v-card-title>{{unit.name}}</v-card-title>
@@ -59,9 +58,9 @@
 					<v-col
 						v-for="(channel, index) in channels"
 						:key="index"
+						class="mx-auto"
 					>
 						<v-card
-							class="mx-auto"
 							max-width="300"
 						>
 							<v-img
