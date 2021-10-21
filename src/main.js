@@ -1,17 +1,15 @@
 import Vue from 'vue'
 import App from './App.vue'
 import vuetify from './plugins/vuetify'
-import VueSocketIO from 'vue-socket.io'
+import VueSocketIO from 'vue-socket.io-extended'
 import VueRouter from 'vue-router'
+import io from "socket.io-client";
 
 Vue.config.productionTip = false
 
-Vue.use(new VueSocketIO({
-  debug: true,
-  connection: `http://${window.server}`,
-  options: {
-    // path: '/',
-  },
+Vue.use(VueSocketIO, io(`https://${window.server}`, {
+  autoConnect: false,
+  transports: ["polling", "websocket"],
 }));
 
 Vue.use(VueRouter);

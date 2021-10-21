@@ -22,7 +22,6 @@
 							:key="index"
 					>
 						<v-card
-								class="mx-auto"
 								width="400"
 						>
 							<v-card-title>{{unit.name}}</v-card-title>
@@ -37,6 +36,8 @@
 										:is="`${trait}Control`"
 										:key="index"
 										:unit="unit"
+										:attributes="(unitTypesMap[unit.typeKey].attributes || {})[trait]"
+										:socketReady="socketReady"
 									></component>
 									<!-- Else just render the name of the trait -->
 									<p
@@ -57,9 +58,9 @@
 					<v-col
 						v-for="(channel, index) in channels"
 						:key="index"
+						class="mx-auto"
 					>
 						<v-card
-							class="mx-auto"
 							max-width="300"
 						>
 							<v-img
@@ -74,8 +75,8 @@
 							<v-card-actions class="justify-end">
 								<v-btn
 									v-if="!connectedChannelsMap[channel.id]"
-									:href="`https://${server}/api/v1/accessControl/proxy/channel/${channel.id}/ops/signin?bearerToken=${token}`"
-									target="_blank"
+									:href="`https://${server}/api/v1/accessControl/proxy/channel/${channel.id}/ops/signin?externalCallbackUrl=${encodeURIComponent(thisUrl())}&bearerToken=${token}`"
+									target="_self"
 								>Connect</v-btn>
 								<v-btn
 									v-else
@@ -169,25 +170,51 @@
 
 			// Server connection
 			server: window.server,
+			socketReady: false,
 		}),
 
 		watch: {
-			token: async function(token) {
+			async token(token) {
 				if (token) {
 					axios.defaults.headers.authorization = `Bearer ${token}`;
 					window.localStorage.token = token;
+					if (!this.$socket.client.isConnected) {
+						this.$socket.client.open();
+					}
 				} else {
 					window.localStorage.removeItem('token');
 					delete axios.defaults.headers.authorization;
+					this.$socket.client.disconnect();
 				}
 				await this.loadUnitTypes();
 				this.updateUnits();
 			},
-			partnerKey: function(value) {
+			partnerKey(value) {
 				window.localStorage.partnerKey = value;
 			},
-			partnerUserId: function(value) {
+			partnerUserId(value) {
 				window.localStorage.partnerUserId = value;
+			},
+		},
+
+		sockets: {
+			connect() {
+				this.$socket.client.emit('authenticate', {bearerToken: this.token, client: 'unified-controls-demo-app'});
+				// The trait-specific control elements can trigger on this to subscribe for their specific states
+				this.socketReady = true;
+			},
+			disconnect() {
+				this.socketConnected = false;
+			},
+			error(e) {
+				console.log('socket errored', e);
+				this.socketConnected = false;
+			},
+			event(payload) {
+				console.log('have event', payload);
+				if (payload.name.startsWith('unit-')) {
+					this.triggerUpdateUnits();
+				}
 			},
 		},
 
@@ -252,6 +279,18 @@
 				this.channels = Object.values(this.channelsMap);
 			},
 
+			// Debounced triggering of unit update
+			triggerUpdateUnitsTimer: null,
+			triggerUpdateUnits() {
+				if (this.triggerUpdateUnitsTimer) {
+					clearTimeout(this.triggerUpdateUnitsTimer);
+				}
+				this.triggerUpdateUnitsTimer = setTimeout(() => {
+					this.triggerUpdateUnitsTimer = null;
+					this.updateUnits();
+				}, 1000);
+			},
+
 			async updateUnits() {
 				if (!this.token) {
 					this.units = [];
@@ -284,7 +323,6 @@
 				this.channelsMap = {};
 				this.channels = [];
 				this.units = [];
-				this.$socket.disconnect();
 			},
 
 			signInWithAccount() {

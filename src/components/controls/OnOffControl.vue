@@ -1,7 +1,11 @@
 <template>
 	<div>
-		<h1>OnOff</h1>
-		<v-switch v-model="value"></v-switch>
+		<v-switch
+				label="OnOff"
+				:value="value"
+				@change="changeValue"
+				:disabled="attributes.isSenseOnly"
+		></v-switch>
 	</div>
 </template>
 
@@ -9,13 +13,38 @@
 import axios from 'axios';
 export default {
 	name: 'OnOffControl',
-	props: ['unit'],
+	props: ['unit', 'attributes', 'socketReady'],
 	data: () => ({
 		value: false,
 	}),
 	watch: {
-		value(value) {
-			console.log('value changed', value);
+		socketReady: {
+			// Socket may have already been ready before this element was initialized
+			immediate: true,
+			// Triggers when socketReady is changed
+			handler(ready) {
+				// Only subscribe if it doesn't have the isSetOnly attribute
+				if (ready && !this.attributes.isSetOnly) {
+					// Subscribe to all states that are relevant to us
+					this.$socket.client.emit('subscribe', {states: [`${this.unit.endpoint}.CurrentOnOffState`]});
+				}
+			},
+		},
+	},
+	sockets: {
+		stateUpdate(payload) {
+			const forThisUnit = payload[this.unit.endpoint];
+			if (forThisUnit && forThisUnit.CurrentOnOffState) {
+				if (forThisUnit.CurrentOnOffState === 'on') {
+					this.value = true;
+				} else if (forThisUnit.CurrentOnOffState === 'off') {
+					this.value = false;
+				}
+			}
+		},
+	},
+	methods: {
+		changeValue(value) {
 			axios.post('/api/v1/actions', {
 				action: 'setOnOff',
 				endpoints: [this.unit.endpoint],
@@ -24,6 +53,6 @@ export default {
 				},
 			})
 		},
-	},
+	}
 }
 </script>
