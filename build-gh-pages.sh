@@ -11,4 +11,4 @@ git reset --hard
 mv dist docs
 git add docs
 git commit -m "gh-pages build ${CUR_REV}"
-git push --force
+git push --set-upstream origin gh-pages --force
