@@ -64,7 +64,7 @@
 						>
 							<v-img
 									height="200px"
-									:src="`https://${server}/api/v1/files/${channel.channelInfo.images.header}`"
+									:src="`https://${server}/api/v1/files/${channel.channelInfo.images.header}?width=300`"
 									class="white--text align-end"
 									gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
 							>
@@ -216,6 +216,10 @@
 				return val ? true : null;
 			},
 
+			thisUrl() {
+				return document.location;
+			},
+
 			// Translation funcion. Should select localized string according to UI locale and fall-back to en. Hardcoded to 'en' now.
 			ts: function(str) {
 				return typeof(str) === 'string' ? str : str.en;
@@ -246,6 +250,8 @@
 				this.channelsMap = Object.fromEntries(unitTypes.map(ut => [ut.channel, allChannelsMap[ut.channel]]));
 				// Derive list of useful channels from channelsMap, as that is de-duplicated already.
 				this.channels = Object.values(this.channelsMap);
+			},
+
 			async updateUnits() {
 				if (!this.token) {
 					this.units = [];
