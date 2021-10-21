@@ -210,6 +210,12 @@
 				console.log('socket errored', e);
 				this.socketConnected = false;
 			},
+			event(payload) {
+				console.log('have event', payload);
+				if (payload.name.startsWith('unit-')) {
+					this.triggerUpdateUnits();
+				}
+			},
 		},
 
 		async created() {
@@ -271,6 +277,18 @@
 				this.channelsMap = Object.fromEntries(unitTypes.map(ut => [ut.channel, allChannelsMap[ut.channel]]));
 				// Derive list of useful channels from channelsMap, as that is de-duplicated already.
 				this.channels = Object.values(this.channelsMap);
+			},
+
+			// Debounced triggering of unit update
+			triggerUpdateUnitsTimer: null,
+			triggerUpdateUnits() {
+				if (this.triggerUpdateUnitsTimer) {
+					clearTimeout(this.triggerUpdateUnitsTimer);
+				}
+				this.triggerUpdateUnitsTimer = setTimeout(() => {
+					this.triggerUpdateUnitsTimer = null;
+					this.updateUnits();
+				}, 1000);
 			},
 
 			async updateUnits() {
