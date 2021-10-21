@@ -12,20 +12,20 @@ It is build as a single-page web-app, based on the Vue framework, using Vuetify 
 ## Running the app
 ### Compile and hot-reloads for development
 ```
-npm install --no-optional
+npm install
 npm run serve
 ```
 
 ### Compile and minify for production
 ```
-npm install --no-optional
+npm install
 npm run build
-npm run serve-dist
+npm start
 ```
 
 ### Lint and fix files
 ```
-npm install --no-optional
+npm install
 npm run lint
 ```
 
@@ -46,7 +46,7 @@ Implementing the unified controls API entails 2 major parts:
 # REST API calls
 ## 1. Create (or retrieve) token for user context using partner-id
 ```
-POST /api/v1/user/account
+POST /api/v1/users/account
 ```
 ### Request:
 #### body:
