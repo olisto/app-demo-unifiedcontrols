@@ -37,6 +37,8 @@
 										:is="`${trait}Control`"
 										:key="index"
 										:unit="unit"
+										:attributes="(unitTypesMap[unit.typeKey].attributes || {})[trait]"
+										:socketReady="socketReady"
 									></component>
 									<!-- Else just render the name of the trait -->
 									<p
@@ -169,16 +171,21 @@
 
 			// Server connection
 			server: window.server,
+			socketReady: false,
 		}),
 
 		watch: {
-			token: async function(token) {
+			async token(token) {
 				if (token) {
 					axios.defaults.headers.authorization = `Bearer ${token}`;
 					window.localStorage.token = token;
+					if (!this.$socket.client.isConnected) {
+						this.$socket.client.open();
+					}
 				} else {
 					window.localStorage.removeItem('token');
 					delete axios.defaults.headers.authorization;
+					this.$socket.client.disconnect();
 				}
 				await this.loadUnitTypes();
 				this.updateUnits();
@@ -188,6 +195,21 @@
 			},
 			partnerUserId: function(value) {
 				window.localStorage.partnerUserId = value;
+			},
+		},
+
+		sockets: {
+			connect() {
+				this.$socket.client.emit('authenticate', {bearerToken: this.token, client: 'unified-controls-demo-app'});
+				// The trait-specific control elements can trigger on this to subscribe for their specific states
+				this.socketReady = true;
+			},
+			disconnect() {
+				this.socketConnected = false;
+			},
+			error(e) {
+				console.log('socket errored', e);
+				this.socketConnected = false;
 			},
 		},
 
@@ -284,7 +306,6 @@
 				this.channelsMap = {};
 				this.channels = [];
 				this.units = [];
-				this.$socket.disconnect();
 			},
 
 			signInWithAccount() {
