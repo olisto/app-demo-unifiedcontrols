@@ -11,6 +11,7 @@
 
 <script>
 import axios from 'axios';
+
 export default {
 	name: 'OnOffControl',
 	props: ['unit', 'attributes', 'socketReady'],
@@ -42,6 +43,10 @@ export default {
 				}
 			}
 		},
+	},
+	async created() {
+		const value = (await axios.get(`/api/v1/state/${this.unit.endpoint}/CurrentOnOffState`)).data;
+		this.value = (value === 'on') ? true : false;
 	},
 	methods: {
 		changeValue(value) {

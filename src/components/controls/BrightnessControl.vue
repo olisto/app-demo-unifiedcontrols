@@ -43,6 +43,12 @@ export default {
 			}
 		},
 	},
+	async created() {
+		const value = (await axios.get(`/api/v1/state/${this.unit.endpoint}/CurrentBrightness`)).data;
+		if (!isNaN(Number(value))) {
+			this.value = Number(value);
+		}
+	},
 	methods: {
 		changeValue(value) {
 			axios.post('/api/v1/actions', {
