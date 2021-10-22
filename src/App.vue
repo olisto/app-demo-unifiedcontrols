@@ -36,7 +36,7 @@
 										:is="`${trait}Control`"
 										:key="index"
 										:unit="unit"
-										:attributes="(unitTypesMap[unit.typeKey].attributes || {})[trait]"
+										:attributes="(unitTypesMap[unit.typeKey].attributes || {})[trait] || {}"
 										:socketReady="socketReady"
 									></component>
 									<!-- Else just render the name of the trait -->
