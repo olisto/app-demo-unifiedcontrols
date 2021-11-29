@@ -65,7 +65,8 @@ userId: String. External (your) reference for the user context
 ```
 
 ## 2. Retrieve available channel information.
-Information about available channels.
+Information about available channels. This will list all available channels, for each available channel the available unit types and for each available unit types the traits it supports. Traits indicate the functionality of the unit type; each trait prescribes actions, conditions and events that must be supported by units with that trait. The specifics for every trait can be found at <https://connect.olisto.com/documentation/traits>.
+Also see the [API call specification](https://connect.olisto.com/documentation/api/#tag/Channels/paths/~1api~1v1~1channels~1descriptions/get).
 ```
 GET /api/v1/channels/descriptions
 ```
@@ -95,6 +96,7 @@ unitTypes: Array of Objects. Descriptions for each type of unit offered by the c
 ```
 
 ## 3. Retrieve list of channel accounts (currently connected channels)
+A channel account represents the connections between a user context and a channel; it is created when the user context is linked to the channel. Channel accounts can be listed to discover the available channel connections for a given user context, and find out what their state is.
 ```
 GET /api/v1/channelaccounts
 ```
@@ -149,7 +151,7 @@ Once the user completes the flow a 'channel account created' event as wel as any
 The list of connected channels and available units should be updated after this, either by processing the 'channel account created' and 'unit created' events or by re-loading the channel accounts and units from the server.
 
 ## 6. Perform supported actions on available units
-Actions that are supported are defined by the traits that a unit has.
+Actions that are supported are defined by the traits that a unit has. All traits and their supported interactions are documented on <https://connect.olisto.com/documentation/traits>.
 ```
 /api/v1/actions
 ```
@@ -171,6 +173,22 @@ Note: This will change to accomodate for having multiple endpoints in 1 request!
 ```
 String: status code. 'triggi/ok' if executed correctly. 
 ```
+### Example
+For example, the OnOff trait defines a `setOnOff` action, which turns a device on or off. It defines one argument for this action: `targetOnOffState` which should have a value of `'on'` or `'off'`. To use this action for turning on a previously discovered unit with endpoint `demo.1234`, make a POST call to the `/api/v1/actions/` API with the following body:
+```json
+{
+  "endpoints": ["demo.1234"],
+  "action": "setOnOff",
+  "args": {
+    "targetOnOffState": "on"
+  }
+}
+```
+If all went well, the endpoint should return the following `text/plain` response:
+```
+olisto/ok
+```
+The trait describes several other possible response codes and their meaning. 
 
 # Using websockets
 The unified controls API utilizes socket.io. Perform the following steps to set up a working connection. How this is done exactly depends on your client library of choice. All payloads are JSON.  
