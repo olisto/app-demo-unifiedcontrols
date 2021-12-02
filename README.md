@@ -10,6 +10,8 @@ This sample application showcases the basic interaction involved in using Olisto
 It is build as a single-page web-app, based on the Vue framework, using Vuetify as a UI component library.
 It can be seen in action on <https://olisto.github.io/app-demo-unifiedcontrols/#/>
 
+Also see demo-webooks.js for a sort example of working with Webhook subscriptions.
+
 ## Running the app
 ### Compile and hot-reloads for development
 ```
