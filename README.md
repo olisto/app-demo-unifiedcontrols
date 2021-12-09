@@ -54,7 +54,7 @@ POST /api/v1/users/account
 ### Request:
 #### body:
 ```
-partnerKey: String. The supplied API key
+partnerKey: String. The supplied API key. Note that this must remain secret, calls using this should always be implemented server-side.
 partnerUserId: String. Your reference for the user context
 ```
 
