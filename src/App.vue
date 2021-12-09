@@ -159,6 +159,7 @@
 
 			// User session, logging in
 			token: null,
+			// Note that partnerKey is a secret and must normally not be known to front-ends
 			partnerKey: null,
 			partnerUserId: null,
 
