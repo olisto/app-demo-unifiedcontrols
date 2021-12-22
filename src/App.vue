@@ -65,7 +65,7 @@
 						>
 							<v-img
 									height="200px"
-									:src="`https://${server}/api/v1/files/${channel.channelInfo.images.header}?width=300`"
+									:src="`${server}/api/v1/files/${channel.channelInfo.images.header}?width=300`"
 									class="white--text align-end"
 									gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
 							>
@@ -75,7 +75,7 @@
 							<v-card-actions class="justify-end">
 								<v-btn
 									v-if="!connectedChannelsMap[channel.id]"
-									:href="`https://${server}/api/v1/accessControl/proxy/channel/${channel.id}/ops/signin?externalCallbackUrl=${encodeURIComponent(thisUrl())}&bearerToken=${token}`"
+									:href="`${server}/api/v1/accessControl/proxy/channel/${channel.id}/ops/signin?externalCallbackUrl=${encodeURIComponent(thisUrl())}&bearerToken=${token}`"
 									target="_self"
 								>Connect</v-btn>
 								<v-btn
@@ -220,7 +220,7 @@
 		},
 
 		async created() {
-			axios.defaults.baseURL = `https://${this.server}`;
+			axios.defaults.baseURL = this.server;
 			this.partnerKey = window.localStorage.partnerKey || '';
 			this.partnerUserId = window.localStorage.partnerUserId || '';
 			// Were we loaded with a token in the qs (usually after visiting the sign-in page)?
@@ -281,7 +281,6 @@
 			},
 
 			// Debounced triggering of unit update
-			triggerUpdateUnitsTimer: null,
 			triggerUpdateUnits() {
 				if (this.triggerUpdateUnitsTimer) {
 					clearTimeout(this.triggerUpdateUnitsTimer);
@@ -328,7 +327,7 @@
 
 			signInWithAccount() {
 				this.signout();
-				document.location = `https://${this.server}/api/v1/usersession/oauth2/signin.html?response_type=bearer&next=${encodeURIComponent(document.location)}#`;
+				document.location = `${this.server}/api/v1/usersession/oauth2/signin.html?response_type=token&client_id=olisto-demo&redirect_uri=${encodeURIComponent(document.location)}`;
 			},
 
 			async signInWithPartnerKey() {

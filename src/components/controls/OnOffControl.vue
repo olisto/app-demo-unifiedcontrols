@@ -56,7 +56,7 @@ export default {
 				args: {
 					targetOnOffState: value ? 'on' : 'off',
 				},
-			})
+			});
 		},
 	}
 }

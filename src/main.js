@@ -7,7 +7,7 @@ import io from "socket.io-client";
 
 Vue.config.productionTip = false
 
-Vue.use(VueSocketIO, io(`https://${window.server}`, {
+Vue.use(VueSocketIO, io(window.server, {
   autoConnect: false,
   transports: ["polling", "websocket"],
 }));
