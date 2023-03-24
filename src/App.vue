@@ -30,12 +30,12 @@
 								<template
 									v-for="(trait, index) in unitTypesMap[unit.typeKey].allTraits"
 								>
-									<v-divider :key="index"></v-divider>
+									<v-divider :key="`divider-${index}`"></v-divider>
 									<!-- If we have a control component for the trait, render it -->
 									<component
 										v-if="$options.components[`${trait}Control`]"
 										:is="`${trait}Control`"
-										:key="index"
+										:key="`controller-${index}`"
 										:unit="unit"
 										:attributes="(unitTypesMap[unit.typeKey].attributes || {})[trait] || {}"
 										:socketReady="socketReady"
