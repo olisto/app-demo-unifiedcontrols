@@ -4,7 +4,8 @@
 				label="OnOff"
 				:value="value"
 				@change="changeValue"
-				:disabled="attributes.isSenseOnly"
+				:disabled="attributes.isSenseOnly || loading"
+				:loading="loading"
 		></v-switch>
 	</div>
 </template>
@@ -17,6 +18,7 @@ export default {
 	props: ['unit', 'attributes', 'socketReady', 'requestAction'],
 	data: () => ({
 		value: false,
+		loading: false,
 	}),
 	watch: {
 		socketReady: {
@@ -50,12 +52,15 @@ export default {
 	},
 	methods: {
 		changeValue(value) {
+			this.loading = true;
 			this.requestAction({
 				action: 'setOnOff',
 				endpoints: [this.unit.endpoint],
 				args: {
 					targetOnOffState: value ? 'on' : 'off',
 				},
+			}).finally(() => {
+				this.loading = false;
 			});
 		},
 	}

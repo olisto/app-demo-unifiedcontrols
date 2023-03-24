@@ -7,7 +7,8 @@
 			label="Brightness"
 			:value="value"
 			@change="changeValue"
-			:disabled="attributes.isSenseOnly"
+			:disabled="attributes.isSenseOnly || loading"
+			:loading="loading"
 		></v-slider>
 	</div>
 </template>
@@ -20,6 +21,7 @@ export default {
 	props: ['unit', 'attributes', 'socketReady', 'requestAction'],
 	data: () => ({
 		value: 50,
+		loading: false,
 	}),
 	watch: {
 		socketReady: {
@@ -51,12 +53,15 @@ export default {
 	},
 	methods: {
 		changeValue(value) {
+			this.loading = true;
 			this.requestAction({
 				action: 'setBrightness',
 				endpoints: [this.unit.endpoint],
 				args: {
 					targetBrightness: Math.round(value),
 				},
+			}).finally(() => {
+				this.loading = false;
 			});
 		}
 	}
