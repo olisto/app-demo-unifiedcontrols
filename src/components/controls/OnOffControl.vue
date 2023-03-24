@@ -6,6 +6,7 @@
 				@change="changeValue"
 				:disabled="attributes.isSenseOnly || loading"
 				:loading="loading"
+				hide-details
 		></v-switch>
 	</div>
 </template>

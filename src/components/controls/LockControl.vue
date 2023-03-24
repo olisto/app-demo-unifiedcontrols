@@ -28,6 +28,7 @@
 						@click="setState(state)"
 						:loading="loading"
 						:disabled="loading"
+						class="mr-4"
 				>{{ state }}</v-btn>
 			</div>
 		</div>

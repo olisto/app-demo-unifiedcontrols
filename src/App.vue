@@ -40,6 +40,7 @@
 										:attributes="(unitTypesMap[unit.typeKey].attributes || {})[trait] || {}"
 										:socketReady="socketReady"
 										:requestAction="requestAction"
+										class="my-4"
 									></component>
 									<!-- Else just render the name of the trait -->
 									<p
