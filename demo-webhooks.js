@@ -4,7 +4,7 @@
  * Some defaults can be configured in `demo-webooks-config.json`
  */
 'use strict';
-
+const process = require('process');
 const http = require('http');
 const readline = require('readline');
 const {promisify} = require('util');
@@ -24,6 +24,7 @@ app.use(express.json());
 // A simple way to check if incomming messages are not spoofed
 const secret = 'AENcWvY4Xjjf3nqd';
 app.post(`/webhooks/${secret}/`, (req, res) => {
+	log.d('got request with payload', req.body)
 	res.send();
 	// Check that it is a state update webhook message
 	if (req.body.type === 'stateUpdate' && req.body.message) {
@@ -56,7 +57,7 @@ async function run() {
 	axios.defaults.headers = {
 		Authorization: `Bearer ${token}`,
 	};
-	
+
 	// Use localtunnel to get a public url that is tunnelled to this locally running server port
 	// see https://github.com/localtunnel/localtunnel#user-content-api
 	// This is the URL we will register for the webhooks.
@@ -75,35 +76,51 @@ async function run() {
 		const type = (channelDescriptions[unit.channel] || {unitTypes: []}).unitTypes.find(t => t.id === unit.type);
 		// This simple demo only listens for OnOff related updates;
 		// If a unit does not have the OnOff trait, it's not interesting for us
-		if (!(type && type.traits && type.traits.includes('OnOff'))) {
+		if (!(type && type.traits && (
+			type.traits.includes('OnOff') ||
+			type.traits.includes('Lock') ||
+			type.traits.includes('ContactSensor') ||
+			false
+		))) {
 			continue;
 		}
-		endpointsWithOnOff.push(unit.endpoint);
+		endpointsWithOnOff.push({endpoint: unit.endpoint, traits: type.traits});
 	}
-	log.d('endpointsWithOnOff', endpointsWithOnOff);
+	log.d('endpoints with supported traits', endpointsWithOnOff);
 
+	if (endpointsWithOnOff.length === 0) {
+		log.i('no endpoints with supported traits; exitting');
+		return;
+	}
 	// Subscribing is done in two parts: first we need to register ourselves as a webhook listener
 	const createWebhookResult = (await axios.post('/api/v1/stateWebhooks?client=demo-webhook', {
 		url: `${tunnel.url}/webhooks/${secret}/`,
 	})).data;
-	
+
 	// Then we need to create a subscription for that listener for each unit that we want updates for
-	const subscribeResults = await Promise.all(endpointsWithOnOff.map(endpoint => {
+	const subscribeResults = await Promise.all(endpointsWithOnOff.map(({endpoint, traits}) => {
+		const states = traits.map(trait => ({
+				OnOff: 'CurrentOnOffState',
+				Lock: 'CurrentLockState',
+				ContactSensor: 'ContactSensorState',
+			}[trait])).filter(x => x);
+		log.d(`subscribing to endpoint ${endpoint} states ${states.join(',')}`);
 		return axios.post(`/api/v1/stateWebhooks/${createWebhookResult._id}/stateSubscriptions?client=demo-webhook`, {
 			// Each subscription is for one endpoint
 			endpoint,
 			// Each subscription can cover several states
-			states: ['CurrentOnOffState'],
+			states,
 		}).then(r => r.data);
 	}));
+	log.d('Running, press CTRL+c to exit');
 	// Run for some time
-	await new Promise(res => setTimeout(res, 30000));
-	
-	// Clean up the webhook when done
-	const r = await axios.delete(`/api/v1/stateWebhooks/${createWebhookResult._id}?client=demo-webhook`);
-	log.d('cleanup result', r.data);
-	tunnel.close();
-	server.close();
+	process.on('SIGINT', async () => {
+		log.d('Terminating');
+		// Clean up the webhook when done
+		const r = await axios.delete(`/api/v1/stateWebhooks/${createWebhookResult._id}?client=demo-webhook`);
+		tunnel.close();
+		server.close();
+	});
 }
 
 run().catch(log.w);

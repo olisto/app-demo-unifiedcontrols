@@ -30,6 +30,7 @@
 								<template
 									v-for="(trait, index) in unitTypesMap[unit.typeKey].allTraits"
 								>
+									<v-divider :key="index"></v-divider>
 									<!-- If we have a control component for the trait, render it -->
 									<component
 										v-if="$options.components[`${trait}Control`]"
@@ -135,11 +136,15 @@
 	import axios from "axios";
 	import OnOffControl from "./components/controls/OnOffControl.vue";
 	import BrightnessControl from "./components/controls/BrightnessControl.vue";
+	import LockControl from "./components/controls/LockControl.vue";
+	import ContactSensorControl from "./components/controls/ContactSensorControl.vue";
 
 	// All supported traits
 	const traits = {
 		OnOff: OnOffControl,
 		Brightness: BrightnessControl,
+		Lock: LockControl,
+		ContactSensor: ContactSensorControl,
 	};
 
 	export default {
