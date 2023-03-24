@@ -39,6 +39,7 @@
 										:unit="unit"
 										:attributes="(unitTypesMap[unit.typeKey].attributes || {})[trait] || {}"
 										:socketReady="socketReady"
+										:requestAction="requestAction"
 									></component>
 									<!-- Else just render the name of the trait -->
 									<p
@@ -241,8 +242,7 @@
 
 		methods: {
 			showError(error) {
-				this.errorText = error;
-				this.showingError = true;
+				this.showingError = this.errorText = error;
 			},
 
 			htmlBool(val) {
@@ -356,6 +356,15 @@
 			async disconnectChannel(channel) {
 				await axios.delete(`/api/v1/channelaccounts/${this.connectedChannelsMap[channel.id]._id}`);
 				this.updateUnits();
+			},
+
+			async requestAction(payload) {
+				return await axios.post('/api/v1/actions', payload).then((result) => {
+					this.showingError = this.errorText = result.data;
+					if (result.data !== 'olisto/ok') {
+						console.warn(`result not OK: ${result.data}`);
+					}
+				});
 			},
 		},
 	};

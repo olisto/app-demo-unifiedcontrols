@@ -31,11 +31,6 @@
 				>{{ state }}</v-btn>
 			</div>
 		</div>
-		<v-snackbar
-				v-model="errorTextSet"
-		>
-			{{ errorText }}
-		</v-snackbar>
 	</div>
 </template>
 
@@ -44,7 +39,7 @@ import axios from 'axios';
 
 export default {
 	name: 'LockControl',
-	props: ['unit', 'attributes', 'socketReady'],
+	props: ['unit', 'attributes', 'socketReady', 'requestAction'],
 	data: () => ({
 		currentState: 'unknown',
 		targetState: null,
@@ -56,8 +51,6 @@ export default {
 			'locked'
 		],
 		loading: false,
-		errorText: '',
-		errorTextSet: false,
 	}),
 	watch: {
 		socketReady: {
@@ -106,18 +99,12 @@ export default {
 	methods: {
 		setState(targetState) {
 			this.loading = true;
-			axios.post('/api/v1/actions', {
+			this.requestAction({
 				action: 'setLockState',
 				endpoints: [this.unit.endpoint],
 				args: {
 					targetLockState: targetState,
 				},
-			}).then((result) => {
-				console.log('result', result);
-				this.errorText = this.errorTextSet = result.data;
-				if (result.data !== 'olisto/ok') {
-					console.warn(`result not OK: ${result.data}`);
-				}
 			}).finally(() => {
 				this.loading = false;
 			});

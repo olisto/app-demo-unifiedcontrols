@@ -14,7 +14,7 @@ import axios from 'axios';
 
 export default {
 	name: 'OnOffControl',
-	props: ['unit', 'attributes', 'socketReady'],
+	props: ['unit', 'attributes', 'socketReady', 'requestAction'],
 	data: () => ({
 		value: false,
 	}),
@@ -50,7 +50,7 @@ export default {
 	},
 	methods: {
 		changeValue(value) {
-			axios.post('/api/v1/actions', {
+			this.requestAction({
 				action: 'setOnOff',
 				endpoints: [this.unit.endpoint],
 				args: {

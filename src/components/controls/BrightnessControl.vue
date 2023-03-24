@@ -17,7 +17,7 @@ import axios from 'axios';
 
 export default {
 	name: 'BrightnessControl',
-	props: ['unit', 'attributes', 'socketReady'],
+	props: ['unit', 'attributes', 'socketReady', 'requestAction'],
 	data: () => ({
 		value: 50,
 	}),
@@ -51,7 +51,7 @@ export default {
 	},
 	methods: {
 		changeValue(value) {
-			axios.post('/api/v1/actions', {
+			this.requestAction({
 				action: 'setBrightness',
 				endpoints: [this.unit.endpoint],
 				args: {
