@@ -69,8 +69,8 @@ async function run() {
 		axios.get('/api/v1/channels/descriptions?lang=en').then(r => r.data),
 	]);
 
-	// Find endpoints for all units that have the OnOff trait
-	const endpointsWithOnOff = [];
+	// Find endpoints for all units that have any supported trait
+	const supportedEndpoints = [];
 	for (const unit of units) {
 		// Find description for the unit's channel, then from that the description for the units' type
 		const type = (channelDescriptions[unit.channel] || {unitTypes: []}).unitTypes.find(t => t.id === unit.type);
@@ -84,11 +84,11 @@ async function run() {
 		))) {
 			continue;
 		}
-		endpointsWithOnOff.push({endpoint: unit.endpoint, traits: type.traits});
+		supportedEndpoints.push({endpoint: unit.endpoint, traits: type.traits});
 	}
-	log.d('endpoints with supported traits', endpointsWithOnOff);
+	log.d('endpoints with supported traits', supportedEndpoints);
 
-	if (endpointsWithOnOff.length === 0) {
+	if (supportedEndpoints.length === 0) {
 		log.i('no endpoints with supported traits; exitting');
 		return;
 	}
@@ -98,7 +98,7 @@ async function run() {
 	})).data;
 
 	// Then we need to create a subscription for that listener for each unit that we want updates for
-	const subscribeResults = await Promise.all(endpointsWithOnOff.map(({endpoint, traits}) => {
+	const subscribeResults = await Promise.all(supportedEndpoints.map(({endpoint, traits}) => {
 		const states = traits.map(trait => ({
 				OnOff: 'CurrentOnOffState',
 				Lock: 'CurrentLockState',
