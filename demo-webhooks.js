@@ -93,7 +93,7 @@ async function run() {
 		return;
 	}
 	// Subscribing is done in two parts: first we need to register ourselves as a webhook listener
-	const createWebhookResult = (await axios.post('/api/v1/stateWebhooks?client=demo-webhook', {
+	const createWebhookResult = (await axios.post('/api/v1/webhooks?client=demo-webhook', {
 		url: `${tunnel.url}/webhooks/${secret}/`,
 	})).data;
 
@@ -105,7 +105,7 @@ async function run() {
 				ContactSensor: 'ContactSensorState',
 			}[trait])).filter(x => x);
 		log.d(`subscribing to endpoint ${endpoint} states ${states.join(',')}`);
-		return axios.post(`/api/v1/stateWebhooks/${createWebhookResult._id}/stateSubscriptions?client=demo-webhook`, {
+		return axios.post(`/api/v1/webhooks/${createWebhookResult._id}/subscriptions?client=demo-webhook`, {
 			// Each subscription is for one endpoint
 			endpoint,
 			// Each subscription can cover several states
@@ -117,7 +117,7 @@ async function run() {
 	process.on('SIGINT', async () => {
 		log.d('Terminating');
 		// Clean up the webhook when done
-		const r = await axios.delete(`/api/v1/stateWebhooks/${createWebhookResult._id}?client=demo-webhook`);
+		const r = await axios.delete(`/api/v1/webhooks/${createWebhookResult._id}?client=demo-webhook`);
 		tunnel.close();
 		server.close();
 	});
